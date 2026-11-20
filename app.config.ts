@@ -94,6 +94,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   extra: {
     appVariant: APP_VARIANT,
-    // `npx eas init` adds `eas: { projectId }` here the first time.
+    eas: {
+      projectId: '6c92cf07-3fb9-423f-8d20-4b0782f3aa5d',
+    },
   },
 });

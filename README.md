@@ -78,7 +78,7 @@ Same setup as Hoppy Blocks: three build variants from `app.config.ts`, selected 
 
 ```bash
 pnpm add -g eas-cli                     # once, if you don't have it from Hoppy Blocks
-eas init                                # once: links the project to your Expo account (nsargsyan)
+eas init                                # already done: project @nsargsyan/gloss-maze
 eas build --profile development         # dev client for simulators/phones
 eas build --profile production          # store builds (version numbers bump automatically)
 eas submit --profile production         # Android → internal track as a draft; iOS → App Store Connect
