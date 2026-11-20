@@ -1,12 +1,13 @@
+import Constants from 'expo-constants';
+
 /**
- * AdMob setup. Before release, replace these with the IDs from your AdMob account:
- * AdMob → Apps → (your app) → Ad units → create an "Interstitial" unit for each platform.
- * The App IDs (with "~") also go in app.json under the react-native-google-mobile-ads plugin.
- *
- * While these are empty, or in development builds, Google's test ads are used,
- * so you can never accidentally click your own live ads (which can get an account banned).
+ * Interstitial ad unit IDs, from EAS environment variables (see .env.example).
+ * They're only used in production builds; development and preview builds always show Google's test ads,
+ * so you can never tap your own live ads (which can get an AdMob account suspended).
  */
+export const IS_PRODUCTION_BUILD = Constants.expoConfig?.extra?.appVariant === 'production';
+
 export const INTERSTITIAL_UNIT_ID = {
-  ios: '', // e.g. 'ca-app-pub-1234567890123456/1234567890'
-  android: '', // e.g. 'ca-app-pub-1234567890123456/0987654321'
+  ios: process.env.EXPO_PUBLIC_ADMOB_INTERSTITIAL_IOS ?? '',
+  android: process.env.EXPO_PUBLIC_ADMOB_INTERSTITIAL_ANDROID ?? '',
 };

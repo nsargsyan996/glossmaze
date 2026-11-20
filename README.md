@@ -58,11 +58,32 @@ Until real IDs are set, Google's **test ads** are shown (marked "Test Ad"). Deve
 
 ### Before release
 
-1. Create an AdMob account and add the app for iOS and Android.
-2. Put each platform's **App ID** (`ca-app-pub-…~…`) in `app.json` → `plugins` → `react-native-google-mobile-ads` (replacing Google's test App IDs there now).
-3. Create an **Interstitial** ad unit per platform and put the unit IDs (`ca-app-pub-…/…`) in `src/ads/config.ts`.
-4. Change the placeholder `com.glossmaze.game` bundle identifier / package in `app.json` to your own.
-5. In AdMob, set up the GDPR consent message (Privacy & messaging) and add an `app-ads.txt` to your website.
+1. In AdMob (same account as Hoppy Blocks, publisher `pub-2071311182191046`), add Gloss Maze for iOS and Android and create an **Interstitial** ad unit for each.
+2. Put the IDs in EAS environment variables for the **production** environment; the names are in `.env.example`.
+   Development and preview builds ignore them and always use Google's test ads.
+3. In AdMob → Privacy & messaging, publish the GDPR consent message and the IDFA explainer for the app.
+4. Make sure your `app-ads.txt` is reachable at the root of the developer website listed in the stores (see `store/listing.md`).
+
+## Releasing
+
+Same setup as Hoppy Blocks: three build variants from `app.config.ts`, selected by `APP_VARIANT` in `eas.json`.
+
+| Profile | App name | Bundle ID / package | Ads |
+|---|---|---|---|
+| `development` | Gloss Maze (Dev) | `com.glossmaze.game.dev` | test |
+| `preview` | Gloss Maze (Preview) | `com.glossmaze.game.preview` | test |
+| `production` | Gloss Maze | `com.glossmaze.game` | real (from EAS env vars) |
+
+```bash
+npx eas init                                   # once: links the project to your Expo account (nsargsyan)
+npx eas build --profile development            # dev client for simulators/phones
+npx eas build --profile production             # store builds (version numbers bump automatically)
+npx eas submit --profile production            # Android → internal track as a draft; iOS → App Store Connect
+npx eas metadata:push                          # App Store texts from store/listing.md (via store.config.js)
+```
+
+The first `eas submit` for iOS asks which App Store Connect app to use; add its `ascAppId` to `eas.json` afterwards.
+Store texts and the privacy form answers for both stores are in `store/listing.md`.
 
 ## Website (`docs/`)
 
@@ -75,7 +96,7 @@ A landing page and privacy policy in the game's style, ready for GitHub Pages:
 To publish: GitHub → repo **Settings → Pages → Build and deployment → Deploy from a branch → `main` / `/docs`**.
 The site will be at `https://<user>.github.io/<repo>/`; use `…/privacy.html` as the privacy policy URL in App Store Connect and Google Play.
 
-Before publishing, replace `{{DEVELOPER}}` and `{{EMAIL}}` in both pages, and update the store buttons once the app has store links.
+Update the store buttons on the landing page once the app has store links.
 
 ## How it's built
 
@@ -92,7 +113,9 @@ Before publishing, replace `{{DEVELOPER}}` and `{{EMAIL}}` in both pages, and up
 | `src/theme.ts` | Five light toy palettes (rotate every 5 levels) and font names |
 | `src/components/ui.tsx` | Gradient backdrop, extruded display text, raised "candy" buttons |
 | `src/components/Confetti.tsx` | Win burst |
-| `src/ads/` | AdMob: pacing rules (`policy.ts`), IDs (`config.ts`), consent + interstitials (`index.ts`); no-op on web |
+| `src/ads/` | AdMob: pacing rules (`policy.ts`), ad unit IDs from env (`config.ts`), consent + interstitials (`index.ts`); no-op on web |
+| `app.config.ts`, `eas.json` | Build variants, AdMob app IDs from env, EAS build/submit profiles |
+| `store/listing.md`, `store.config.js` | Store texts, privacy form answers, `eas metadata` config |
 | `src/storage.ts` | Saves progress, stars and coins (AsyncStorage) |
 
 ## Roadmap

@@ -1,6 +1,6 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
-import { INTERSTITIAL_UNIT_ID } from './config';
+import { INTERSTITIAL_UNIT_ID, IS_PRODUCTION_BUILD } from './config';
 import { AdPacing, afterLevel, START_PACING } from './policy';
 
 type AdsLib = typeof import('react-native-google-mobile-ads');
@@ -27,7 +27,7 @@ function loadLib(): AdsLib | null {
 
 function unitId(l: AdsLib): string {
   const real = Platform.OS === 'ios' ? INTERSTITIAL_UNIT_ID.ios : INTERSTITIAL_UNIT_ID.android;
-  return __DEV__ || !real ? l.TestIds.INTERSTITIAL : real;
+  return IS_PRODUCTION_BUILD && !__DEV__ && real ? real : l.TestIds.INTERSTITIAL;
 }
 
 function preload(l: AdsLib) {
