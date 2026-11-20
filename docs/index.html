@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gloss Maze: swipe the ball, paint every tile</title>
+  <meta name="description" content="Gloss Maze is a calm maze-painting puzzle. Swipe the ball, it rolls until it hits a wall, and every tile it crosses gets painted. Cover them all to clear the level.">
+  <meta name="theme-color" content="#DDF6FF">
+  <meta property="og:title" content="Gloss Maze">
+  <meta property="og:description" content="Swipe the ball. It rolls until it hits a wall. Paint every tile.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/bagel-fat-one.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/fredoka-500Medium.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body class="theme-pool">
+
+  <header class="band theme-pool hero">
+    <div class="wrap">
+      <div class="site-head">
+        <a class="wordmark" href="./" aria-label="Gloss Maze home">
+          <svg class="ball-mark" viewBox="0 0 26 26" aria-hidden="true"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF9CB1"/><stop offset="1" stop-color="#FF4F74"/></linearGradient></defs><circle cx="13" cy="13" r="11.5" fill="url(#g)" stroke="#F5FCFF" stroke-width="2.5"/><ellipse cx="9.5" cy="8" rx="3.6" ry="2.3" fill="#fff" opacity=".75" transform="rotate(-25 9.5 8)"/></svg>
+          Gloss Maze
+        </a>
+        <nav aria-label="Site"><a href="privacy.html">Privacy</a></nav>
+      </div>
+
+      <div class="hero-grid">
+        <div>
+          <h1 class="chunky">Gloss<br>Maze</h1>
+          <p class="lede">Swipe the ball. It rolls until it hits a wall, painting every tile it crosses. Cover them all to clear the level.</p>
+          <div class="stores">
+            <a class="candy" aria-disabled="true" role="link">App Store<small>Coming soon</small></a>
+            <a class="candy soft" aria-disabled="true" role="link">Google Play<small>Coming soon</small></a>
+          </div>
+          <p class="stores-note">Free to play, with an occasional ad between levels.</p>
+        </div>
+
+        <div class="board-shell" data-board>
+          <div class="board" tabindex="0" role="application" aria-label="Playable Gloss Maze board. Use the arrow keys or swipe to roll the ball."></div>
+          <p class="board-caption" aria-live="polite">This level is solving itself. Swipe, drag or use the arrow keys to play.</p>
+          <div class="board-tools"><button class="tool" type="button" data-restart>Restart</button></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="band theme-peach how" aria-labelledby="how-title">
+      <div class="wrap">
+        <h2 class="chunky" id="how-title">How it plays</h2>
+        <ol class="steps">
+          <li>
+            <h3>Swipe</h3>
+            <p>Send the ball up, down, left or right. You can turn mid-swipe without lifting your finger.</p>
+          </li>
+          <li>
+            <h3>It keeps rolling</h3>
+            <p>The ball only stops when it hits a wall, so the puzzle is choosing where you'll stop.</p>
+          </li>
+          <li>
+            <h3>Paint every tile</h3>
+            <p>Every tile the ball rolls over gets painted. Cover the whole maze to finish the level.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="band theme-mint inside" aria-labelledby="inside-title">
+      <div class="wrap">
+        <h2 class="chunky" id="inside-title">Made to be relaxing</h2>
+        <ul class="facts">
+          <li><div><strong>Endless levels</strong><span>New mazes keep coming, slowly growing bigger and twistier.</span></div></li>
+          <li><div><strong>No timer, no game over</strong><span>Take as long as you like. Undo and restart are always there.</span></div></li>
+          <li><div><strong>Stars for tidy solutions</strong><span>Finish in the fewest moves to earn all three stars.</span></div></li>
+          <li><div><strong>Ads stay out of the way</strong><span>Only between levels, never during one, and none in your first five levels.</span></div></li>
+          <li><div><strong>Plays offline</strong><span>No connection needed to play. Ads only appear when you're online.</span></div></li>
+          <li><div><strong>No account</strong><span>Your progress is saved on your phone. Nothing to sign up for.</span></div></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="band theme-lilac site-foot">
+    <div class="wrap">
+      <span>&copy; 2026 {{DEVELOPER}}</span>
+      <nav aria-label="Footer">
+        <a href="privacy.html">Privacy policy</a>
+        <a href="mailto:{{EMAIL}}">{{EMAIL}}</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="board.js" defer></script>
+</body>
+</html>
