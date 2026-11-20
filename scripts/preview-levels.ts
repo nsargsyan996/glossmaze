@@ -1,5 +1,5 @@
 /// <reference types="node" />
-// Prints generated levels as ASCII: npx tsx scripts/preview-levels.ts 1 5 20
+// Prints generated levels as ASCII: npx tsx scripts/preview-levels.ts 1 5 20 (or: pnpm preview-levels 1 5 20)
 import { generateLevel } from '../src/game/generator';
 
 const nums = process.argv.slice(2).map(Number);

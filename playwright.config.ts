@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * End-to-end tests against the real web build.
- * First run: `npx playwright install chromium`, then `npm run test:e2e`.
+ * First run: `pnpm exec playwright install chromium`, then `pnpm test:e2e`.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -15,7 +15,7 @@ export default defineConfig({
     launchOptions: process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {},
   },
   webServer: {
-    command: 'npx expo export --platform web --output-dir dist-web && npx serve dist-web -l 4173 --no-clipboard',
+    command: 'pnpm exec expo export --platform web --output-dir dist-web && pnpm exec serve dist-web -l 4173 --no-clipboard',
     url: 'http://localhost:4173',
     timeout: 180_000,
     reuseExistingServer: !process.env.CI,

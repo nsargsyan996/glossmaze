@@ -44,6 +44,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
     },
+    // Apple's required-reason APIs used by React Native and Expo modules (saved settings, file dates,
+    // uptime, free space). App Store Connect rejects uploads that use them without a declared reason.
+    privacyManifests: {
+      NSPrivacyAccessedAPITypes: [
+        { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryUserDefaults', NSPrivacyAccessedAPITypeReasons: ['CA92.1'] },
+        { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryFileTimestamp', NSPrivacyAccessedAPITypeReasons: ['C617.1'] },
+        { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategorySystemBootTime', NSPrivacyAccessedAPITypeReasons: ['35F9.1'] },
+        { NSPrivacyAccessedAPIType: 'NSPrivacyAccessedAPICategoryDiskSpace', NSPrivacyAccessedAPITypeReasons: ['E174.1'] },
+      ],
+    },
   },
   android: {
     package: BUNDLE_ID[APP_VARIANT],
@@ -76,6 +86,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         iosAppId: process.env.ADMOB_IOS_APP_ID || ADMOB_TEST_APP_ID.ios,
         delayAppMeasurementInit: true,
         userTrackingUsageDescription: TRACKING_TEXT,
+        // Google's SKAdNetwork ID, so iOS can attribute ad installs (AdMob asks for it in Info.plist).
+        skAdNetworkItems: ['cstr6suwn9.skadnetwork'],
       },
     ],
     ['expo-tracking-transparency', { userTrackingPermission: TRACKING_TEXT }],

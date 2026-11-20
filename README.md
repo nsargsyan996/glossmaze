@@ -7,25 +7,27 @@ Paint every floor tile to finish the level.
 
 ## Run it
 
+This project uses **pnpm** (same setup as Hoppy Blocks: `.npmrc` with `node-linker=hoisted`, which React Native needs). If `pnpm` isn't installed: `corepack enable`.
+
 ```bash
-npm install
-npx expo start        # press i (iOS simulator), a (Android), or w (web)
+pnpm install
+pnpm expo start        # press i (iOS simulator), a (Android), or w (web)
 ```
 
 Expo Go works for playing and developing (ads are skipped there). Ads need a development build; see below.
 On web you can also play with the arrow keys / WASD, `z` to undo and `r` to restart.
 
 ```bash
-npm test              # logic + screen tests (about 15 s)
-npm run test:logic    # rules, level generator, solver, swipe steering (node:test)
-npm run test:screens  # GameScreen + saved progress with real pan gestures (Jest + Testing Library)
-npm run test:e2e      # plays the real web build in a browser (Playwright)
-npm run typecheck
-npm run preview-levels -- 1 10 50   # print levels as ASCII
-npm run analyze                     # compare par with the true fewest moves
+pnpm test              # logic + screen tests (about 15 s)
+pnpm test:logic    # rules, level generator, solver, swipe steering (node:test)
+pnpm test:screens  # GameScreen + saved progress with real pan gestures (Jest + Testing Library)
+pnpm test:e2e      # plays the real web build in a browser (Playwright)
+pnpm typecheck
+pnpm preview-levels 1 10 50      # print levels as ASCII
+pnpm analyze                     # compare par with the true fewest moves
 ```
 
-First time running the end-to-end tests: `npx playwright install chromium`.
+First time running the end-to-end tests: `pnpm exec playwright install chromium`.
 
 ### What the tests cover
 
@@ -50,8 +52,8 @@ tracking prompt on iOS. Players in those regions get a "Privacy settings" link o
 **Ads only run in a development or store build**, not in Expo Go or on the web (both silently skip them):
 
 ```bash
-npx expo run:ios        # needs Xcode
-npx expo run:android    # needs Android Studio
+pnpm expo run:ios        # needs Xcode
+pnpm expo run:android    # needs Android Studio
 ```
 
 Until real IDs are set, Google's **test ads** are shown (marked "Test Ad"). Development builds always use test ads.
@@ -75,11 +77,12 @@ Same setup as Hoppy Blocks: three build variants from `app.config.ts`, selected 
 | `production` | Gloss Maze | `com.glossmaze.game` | real (from EAS env vars) |
 
 ```bash
-npx eas init                                   # once: links the project to your Expo account (nsargsyan)
-npx eas build --profile development            # dev client for simulators/phones
-npx eas build --profile production             # store builds (version numbers bump automatically)
-npx eas submit --profile production            # Android → internal track as a draft; iOS → App Store Connect
-npx eas metadata:push                          # App Store texts from store/listing.md (via store.config.js)
+pnpm add -g eas-cli                     # once, if you don't have it from Hoppy Blocks
+eas init                                # once: links the project to your Expo account (nsargsyan)
+eas build --profile development         # dev client for simulators/phones
+eas build --profile production          # store builds (version numbers bump automatically)
+eas submit --profile production         # Android → internal track as a draft; iOS → App Store Connect
+eas metadata:push                       # App Store texts from store/listing.md (via store.config.js)
 ```
 
 The first `eas submit` for iOS asks which App Store Connect app to use; add its `ascAppId` to `eas.json` afterwards.
