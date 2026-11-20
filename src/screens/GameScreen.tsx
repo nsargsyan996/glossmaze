@@ -290,13 +290,13 @@ function WinOverlay({
 
       <View style={styles.bigStars}>
         {[0, 1, 2].map((i) => (
-          <Animated.View
-            key={i}
-            entering={ZoomIn.delay(350 + i * 180).springify().damping(9)}
-            style={{ transform: [{ translateY: i === 1 ? -14 : 0 }] }}
-          >
-            <Ionicons name="star" size={i === 1 ? 72 : 58} color={i < stars ? theme.paint : theme.wallSide} />
-          </Animated.View>
+          // The middle star sits higher. That offset lives on a plain wrapper, because a transform on the
+          // view that runs the entering animation would be overwritten by it (Reanimated warns about that).
+          <View key={i} style={{ marginBottom: i === 1 ? 14 : 0 }}>
+            <Animated.View entering={ZoomIn.delay(350 + i * 180).springify().damping(9)}>
+              <Ionicons name="star" size={i === 1 ? 72 : 58} color={i < stars ? theme.paint : theme.wallSide} />
+            </Animated.View>
+          </View>
         ))}
       </View>
 
