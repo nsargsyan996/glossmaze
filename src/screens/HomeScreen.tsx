@@ -23,6 +23,12 @@ export function HomeScreen({ progress, onPlay }: Props) {
   const { height } = useWindowDimensions();
   const compact = height < 720;
   const [area, setArea] = useState({ w: 0, h: 0 });
+  // Generating a large level takes a moment on slower phones; do it before the player taps Play.
+  useEffect(() => {
+    const t = setTimeout(() => generateLevel(progress.level), 300);
+    return () => clearTimeout(t);
+  }, [progress.level]);
+
   const recent = Array.from({ length: Math.min(progress.level - 1, 4) }, (_, i) => progress.level - 1 - i).reverse();
 
   return (

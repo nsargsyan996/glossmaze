@@ -25,6 +25,8 @@ async function solve(level: number) {
     pan.begin({ translationX: 0, translationY: 0 });
     pan.activate({ translationX: 0, translationY: 0 });
     for (const d of generateLevel(level).solution) {
+      // let each roll finish before the next turn, like a person steering
+      await new Promise((r) => setTimeout(r, 350));
       for (let i = 0; i < 10; i++) {
         x += OFFSET[d][0] / 10;
         y += OFFSET[d][1] / 10;

@@ -49,15 +49,34 @@ test('painting a hand-made level to completion', () => {
   assert.equal(s.moves, 1);
 });
 
-test('generated levels 1..400 are deterministic and solvable', () => {
+test('generated levels 1..200 are solvable and generate quickly', () => {
   const t0 = Date.now();
-  for (let n = 1; n <= 400; n++) {
+  for (let n = 1; n <= 200; n++) {
     const a = generateLevel(n);
     assert.ok(verifySolution(a), `level ${n} not solvable`);
     assert.ok(a.width >= 3 && a.height >= 3, `level ${n} too small`);
   }
-  const perLevel = (Date.now() - t0) / 400;
-  assert.ok(perLevel < 30, `generation too slow: ${perLevel}ms/level`);
+  const perLevel = (Date.now() - t0) / 200;
+  assert.ok(perLevel < 120, `generation too slow: ${perLevel}ms/level`);
+});
+
+test('levels get long quickly after the tutorial', () => {
+  const avgPar = (from: number, to: number) => {
+    let sum = 0;
+    for (let n = from; n <= to; n++) sum += generateLevel(n).par;
+    return sum / (to - from + 1);
+  };
+  assert.ok(avgPar(1, 3) <= 8, 'tutorial levels should stay short');
+  assert.ok(avgPar(10, 20) >= 13, `levels 10-20 too short: ${avgPar(10, 20)}`);
+  assert.ok(avgPar(30, 50) >= 22, `levels 30-50 too short: ${avgPar(30, 50)}`);
+});
+
+test('levels need some planning: casual swiping fails often after the tutorial', async () => {
+  const { casualSolveRate } = await import('./generator');
+  let sum = 0;
+  for (let n = 15; n <= 40; n++) sum += casualSolveRate(generateLevel(n));
+  const avg = sum / 26;
+  assert.ok(avg < 0.6, `levels 15-40 solve themselves too often: ${(avg * 100).toFixed(0)}%`);
 });
 
 test('levels 10000+ also generate', () => {

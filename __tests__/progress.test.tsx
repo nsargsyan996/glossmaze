@@ -18,6 +18,7 @@ async function drag(dirs: Dir[]) {
     pan.begin({ translationX: 0, translationY: 0 });
     pan.activate({ translationX: 0, translationY: 0 });
     for (const d of dirs) {
+      await new Promise((r) => setTimeout(r, 350));
       for (let i = 0; i < 10; i++) {
         x += OFFSET[d][0] / 10;
         y += OFFSET[d][1] / 10;

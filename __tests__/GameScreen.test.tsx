@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createGestureController, getByGestureTestId } from 'react-native-gesture-handler/jest-utils';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { applyMove, createState } from '../src/game/engine';
 import { generateLevel } from '../src/game/generator';
 import { Dir } from '../src/game/types';
 import { GameScreen } from '../src/screens/GameScreen';
@@ -25,22 +26,34 @@ async function renderGame(level = 1) {
 
 const OFFSET: Record<Dir, [number, number]> = { up: [0, -40], down: [0, 40], left: [-40, 0], right: [40, 0] };
 
-/** A real pan gesture: begin, activate, stream of updates along a path, end. */
+/**
+ * A real pan gesture: begin, activate, a stream of updates along a path, end.
+ * `pauseMs` lets the ball roll between turns, the way a person steers; 0 turns instantly.
+ */
 async function drag(...dirs: Dir[]) {
+  return dragPaced(0, ...dirs);
+}
+
+async function dragPaced(pauseMs: number, ...dirs: Dir[]) {
   const pan = createGestureController(getByGestureTestId('board-pan'));
   let x = 0;
   let y = 0;
   await act(async () => {
     pan.begin({ translationX: 0, translationY: 0 });
     pan.activate({ translationX: 0, translationY: 0 });
-    for (const d of dirs) {
-      const [dx, dy] = OFFSET[d];
+  });
+  for (const d of dirs) {
+    const [dx, dy] = OFFSET[d];
+    await act(async () => {
       for (let i = 0; i < 10; i++) {
         x += dx / 10;
         y += dy / 10;
         pan.update({ translationX: x, translationY: y });
       }
-    }
+      if (pauseMs) jest.advanceTimersByTime(pauseMs);
+    });
+  }
+  await act(async () => {
     pan.end({ translationX: x, translationY: y, velocityX: 0, velocityY: 0 });
   });
 }
@@ -62,26 +75,30 @@ test('level 1 starts with no moves and full stars', async () => {
   expect(screen.getByText(`Finish in ${generateLevel(1).par} for 3 stars`)).toBeTruthy();
 });
 
+const LEVEL_1 = generateLevel(1);
+const FIRST_MOVES = LEVEL_1.solution;
+// A direction the ball can't move in at the start of level 1 (into a wall or the edge).
+const BLOCKED = (['up', 'down', 'left', 'right'] as Dir[]).find((d) => !applyMove(LEVEL_1, createState(LEVEL_1), d))!;
+
 test('a swipe moves the ball and counts a move', async () => {
   await renderGame();
-  await drag('up');
+  await drag(FIRST_MOVES[0]);
   await settle();
   expect(screen.getByText('1 move')).toBeTruthy();
 });
 
 test('a swipe into a wall does not count', async () => {
   await renderGame();
-  // Level 1 opens with the ball against a wall on the right.
-  await drag('right');
+  await drag(BLOCKED);
   await settle();
   expect(screen.getByText('0 moves')).toBeTruthy();
 });
 
 test('undo takes back the last move, restart clears all', async () => {
   await renderGame();
-  await drag('up');
+  await drag(FIRST_MOVES[0]);
   await settle();
-  await drag('left');
+  await drag(FIRST_MOVES[1]);
   await settle();
   expect(screen.getByText('2 moves')).toBeTruthy();
 
@@ -97,7 +114,7 @@ test('undo takes back the last move, restart clears all', async () => {
 test('solving the level in one continuous drag shows the win screen with 3 stars', async () => {
   const { onComplete, onNext } = await renderGame();
   const solution = generateLevel(1).solution;
-  await drag(...solution);
+  await dragPaced(400, ...solution);
   await settle();
 
   expect(screen.getByText('Painted!')).toBeTruthy();
@@ -110,8 +127,11 @@ test('solving the level in one continuous drag shows the win screen with 3 stars
 
 test('separate swipes made while the ball rolls are queued in order', async () => {
   const { onComplete } = await renderGame();
-  // All four swipes arrive before the first roll ends.
-  for (const d of generateLevel(1).solution) await drag(d);
+  // Several swipes arrive before the first roll ends; the buffer keeps up to 3 while the ball rolls.
+  const solution = generateLevel(1).solution;
+  for (const d of solution.slice(0, 4)) await drag(d);
+  await settle();
+  for (const d of solution.slice(4)) await drag(d);
   await settle();
   expect(onComplete).toHaveBeenCalledWith(1, 3);
 });

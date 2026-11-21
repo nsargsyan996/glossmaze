@@ -9,14 +9,24 @@ export interface Difficulty {
   targetMoves: number;
 }
 
-/** Difficulty curve: boards and move counts grow slowly, then plateau. */
+/**
+ * Difficulty curve. Levels 1–3 are a short tutorial on small boards; after that boards and move counts
+ * ramp up quickly (a 10+ move level by level 5, ~20 moves by level 15) and plateau around level 45.
+ */
 export function difficultyFor(levelNumber: number): Difficulty {
-  const n = Math.max(1, levelNumber) - 1;
+  const n = Math.max(1, levelNumber);
+  if (n <= 3) return { width: 5, height: 7, targetMoves: 4 + n };
+  const k = n - 4;
   return {
-    width: Math.min(5 + Math.floor(n / 10), 11),
-    height: Math.min(7 + Math.floor(n / 6), 15),
-    targetMoves: Math.min(4 + Math.floor(n * 0.5), 36),
+    width: Math.min(6 + Math.floor(k / 7), 11),
+    height: Math.min(8 + Math.floor(k / 4), 15),
+    targetMoves: Math.min(10 + Math.floor(k * 0.8), 40),
   };
+}
+
+/** How much the "is it tricky?" check counts for a level: none in the tutorial, full weight by level 15. */
+export function trickinessWeight(levelNumber: number): number {
+  return levelNumber <= 3 ? 0 : Math.min(3, (levelNumber - 3) * 0.25);
 }
 
 interface Candidate {
@@ -190,7 +200,30 @@ function score(level: Level, d: Difficulty): number {
     }
   }
   const corridors = 1 - Math.min(1, (blobs * 4) / Math.max(1, floor));
-  return moveFit * 2 + sizeFit + interiorWalls + corridors;
+  return moveFit * 3 + sizeFit + interiorWalls + corridors;
+}
+
+/**
+ * Share of simulated casual players who solve the level: each swipes mostly toward unpainted tiles,
+ * sometimes at random, with no planning, and gets three times par in moves. A high rate means the level
+ * solves itself; a low one means it needs thinking ahead.
+ */
+export function casualSolveRate(level: Level, trials = 30): number {
+  const rng = mulberry32(hashSeed(0xca5, level.number, level.par));
+  const limit = level.par * 3;
+  let solved = 0;
+  for (let t = 0; t < trials; t++) {
+    let state = createState(level);
+    for (let m = 0; m < limit && !isComplete(state); m++) {
+      const options = DIRS.map((d) => applyMove(level, state, d)).filter((r) => r !== null);
+      if (!options.length) break;
+      const painting = options.filter((r) => r!.newlyPainted.length > 0);
+      const pool = painting.length && rng() < 0.8 ? painting : options;
+      state = pool[Math.floor(rng() * pool.length)]!.state;
+    }
+    if (isComplete(state)) solved++;
+  }
+  return solved / trials;
 }
 
 const cache = new Map<number, Level>();
@@ -201,20 +234,42 @@ export function generateLevel(levelNumber: number): Level {
   if (cached) return cached;
 
   const d = difficultyFor(levelNumber);
+  const weight = trickinessWeight(levelNumber);
   let best: Level | null = null;
   let bestScore = -Infinity;
 
+  // Pass 1: carve candidates and rank them on shape and length (cheap).
+  const candidates: { level: Level; base: number }[] = [];
   for (let attempt = 0; attempt < 24; attempt++) {
     const rng = mulberry32(hashSeed(0x5eed, levelNumber, attempt));
     const level = toLevel(levelNumber, crop(carve(d, rng)));
     if (level.width < 3 || level.height < 3 || level.par < 2) continue;
     if (!verifySolution(level)) continue;
-    const s = score(level, d);
+    const base = score(level, d);
+    candidates.push({ level, base });
+    if (weight === 0 && base >= 5.4) break;
+  }
+  candidates.sort((a, b) => b.base - a.base);
+
+  // Pass 2 (after the tutorial): for the best few, use the true minimum moves where it's cheap to find,
+  // so a long-looking level with a shortcut doesn't win, and add how tricky it is for a casual player.
+  for (const [i, c] of candidates.entries()) {
+    let level = c.level;
+    let s = c.base;
+    if (weight > 0 && i < 6) {
+      const optimal = solveOptimal(level, 6000);
+      if (optimal && optimal.length < level.par) {
+        level = { ...level, solution: optimal, par: optimal.length };
+        s = score(level, d);
+      }
+      s += weight * (1 - casualSolveRate(level, 20));
+    } else if (weight > 0) {
+      continue;
+    }
     if (s > bestScore) {
       best = level;
       bestScore = s;
     }
-    if (s >= 4.4) break;
   }
 
   if (!best) throw new Error(`Could not generate level ${levelNumber}`);

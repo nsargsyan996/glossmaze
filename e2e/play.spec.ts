@@ -2,8 +2,10 @@ import { expect, Page, test } from '@playwright/test';
 
 const KEY = 'glossmaze.progress.v1';
 
-/** Level 1's layout is fixed by its seed: up, left, up, right paints every tile. */
-const LEVEL_1 = ['up', 'left', 'up', 'right'] as const;
+import { generateLevel } from '../src/game/generator';
+
+/** Level 1's layout is fixed by its seed; its known solution paints every tile. */
+const LEVEL_1 = generateLevel(1).solution;
 type Dir = 'up' | 'down' | 'left' | 'right';
 const STEP: Record<Dir, [number, number]> = { up: [0, -40], down: [0, 40], left: [-40, 0], right: [40, 0] };
 
@@ -53,7 +55,7 @@ test('arrow keys solve level 1 and show the win screen', async ({ page }) => {
     await page.waitForTimeout(400);
   }
   await expect(page.getByText('Painted!')).toBeVisible();
-  await expect(page.getByText('Level 1 solved in 4 moves')).toBeVisible();
+  await expect(page.getByText(`Level 1 solved in ${LEVEL_1.length} moves`)).toBeVisible();
 });
 
 test('one continuous drag solves level 1 (slow turns)', async ({ page }) => {
@@ -70,9 +72,10 @@ test('one continuous drag solves level 1 (turning while the ball still rolls)', 
 
 test('undo and restart', async ({ page }) => {
   await startLevel(page);
-  await page.keyboard.press('ArrowUp');
-  await page.waitForTimeout(400);
-  await page.keyboard.press('ArrowLeft');
+  for (const d of LEVEL_1.slice(0, 2)) {
+    await page.keyboard.press(`Arrow${d[0].toUpperCase()}${d.slice(1)}`);
+    await page.waitForTimeout(400);
+  }
   await expect(page.getByText('2 moves')).toBeVisible();
   await page.getByLabel('Undo move').click();
   await expect(page.getByText('1 move', { exact: true })).toBeVisible();
